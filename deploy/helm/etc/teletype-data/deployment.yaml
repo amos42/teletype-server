@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teletype-data
+  labels:
+    app.kubernetes.io/name: teletype-data
+    app.kubernetes.io/instance: teletype-data
+    app.kubernetes.io/version: 0.0.1
+spec:
+  selector:
+    matchLabels:           
+      app.kubernetes.io/name: teletype-data
+      app.kubernetes.io/instance: teletype-data
+      app.kubernetes.io/version: 0.0.1    
+  replicas: 1
+  template:
+    metadata:
+      labels:         
+        app.kubernetes.io/name: teletype-data
+        app.kubernetes.io/instance: teletype-data
+        app.kubernetes.io/version: 0.0.1       
+    spec:
+      containers:
+        - name: teletype-data
+          image: postgres:15.6-bullseye
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: teletype-server
+            - name: POSTGRES_USER
+              value: teletype-server
+            - name: POSTGRES_PASSWORD
+              value: teletype1!

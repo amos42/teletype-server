@@ -1,0 +1,64 @@
+{{- $ := . -}}
+{{- if $.Values.serviceList }}
+{{- range $.Values.serviceList }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name  }}
+  labels:
+    app: {{ .name }}
+    release: {{ $.Release.Name }}
+spec:
+  type: {{ .type | default "ClusterIP" }}
+  ports:
+    {{- range .ports }}
+    - port: {{ .port }}
+      targetPort: {{ .targetPort | default .port }}
+      protocol: {{ .protocol | default "TCP" }}
+      {{- if .name }}
+      name: {{ .name }}
+      {{- end }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+  selector:
+    app: {{ .name }}
+    release: {{ $.Release.Name }}
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/instance: {{ .version }}
+    app.kubernetes.io/version: {{ .version }}
+{{- end }}
+{{- end }}
+{{- range $.Values.deployment.deploymentList }}
+{{- if .service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name  }}
+  labels:
+    app: {{ .name }}
+    release: {{ $.Release.Name }}
+spec:
+  type: {{ .service.serviceType | default "ClusterIP" }}
+  ports:
+    {{- range .ports }}
+    - port: {{ .port }}
+      targetPort: {{ .port | default .hostPort }}
+      protocol: {{ .protocol | default "TCP" }}
+      {{- if .name }}
+      name: {{ .name }}
+      {{- end }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+  selector:
+    app: {{ .name }}
+    {{- range $key, $value := .selector }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}

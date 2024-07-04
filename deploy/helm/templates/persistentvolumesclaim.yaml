@@ -1,0 +1,28 @@
+{{- $ := . -}}
+{{- range .Values.persistence }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  {{- if .storageClassName }}
+  storageClassName: {{ .storageClassName }}
+  {{- end }}
+  {{- if .accessMode }}
+  accessModes: 
+    - {{ .accessMode }}
+  {{- end }}
+  {{- if .volumeSize }}
+  resources:
+    requests:
+      storage: {{ .volumeSize }}
+  {{- end }}
+{{- end }}

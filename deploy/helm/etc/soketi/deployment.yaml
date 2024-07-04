@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soketi
+  labels:
+    app: soketi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: soketi
+  template:
+    metadata:
+      labels:
+        app: soketi
+        ws.soketi.app/accepts-new-connections: "yes" # optional
+    spec:
+      containers:
+        - name: soketi
+          image: quay.io/soketi/soketi:1.6.1-16-alpine
+          ports:
+            - containerPort: 6001
+          env:
+            - name: PORT
+              value: "6001"
