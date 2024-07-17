@@ -1,0 +1,13 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: soketi-config
+  namespace: teletype
+  labels:
+    app: soketi-config
+    app.kubernetes.io/name: soketi-config
+    app.kubernetes.io/part-of: che.eclipse.org
+data:
+  SOKETI_DEFAULT_APP_ID: '1355308'
+  SOKETI_DEFAULT_APP_KEY: cc8fb96b89e84d763d6b
+  SOKETI_DEFAULT_APP_SECRET: 1882b79e0d1e521226d7

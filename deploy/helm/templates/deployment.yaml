@@ -35,6 +35,9 @@ spec:
       labels:
         app: {{ .name }}
         release: {{ $.Release.Name }}
+        {{- range $key, $value := .additionalLabels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
     spec:
       {{- if .hostNetwork }}
       hostNetwork: {{ .hostNetwork }}
@@ -98,6 +101,12 @@ spec:
               {{- if .readOnly }}
               readOnly: {{ .readOnly }}
               {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if .args }}
+          args:
+            {{- range .args }}
+            - {{ . | quote }}
             {{- end }}
           {{- end }}
       {{- if .volumeMounts }}

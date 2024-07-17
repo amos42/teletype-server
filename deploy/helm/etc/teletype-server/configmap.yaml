@@ -1,0 +1,41 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: teletype-server-config
+  namespace: teletype
+  labels:
+    app: teletype-server-config
+    app.kubernetes.io/name: teletype-server-config
+    app.kubernetes.io/part-of: che.eclipse.org
+data:
+    DATABASE_URL: "postgres://teletype:teletype1!@teletype-data:5432/teletype"
+    PUSHER_HOST: soketi
+    ICE_SERVER: |-
+        {
+          "ice_servers": [
+            {
+              "url": "stun:coturn:3478?transport=udp",
+              "urls": "stun:coturn:3478?transport=udp"
+            },
+            {
+              "url": "turn:coturn:3478?transport=udp",
+              "urls": "turn:coturn:3478?transport=udp",
+              "username": "teletype",
+              "credential": "teletype1!"
+            },
+            {
+              "url": "turn:coturn:3478?transport=tcp",
+              "urls": "turn:coturn:3478?transport=tcp",
+              "username": "teletype",
+              "credential": "teletype1!"
+            },
+            {
+              "url": "turn:coturn:443?transport=tcp",
+              "urls": "turn:coturn:443?transport=tcp",
+              "username": "teletype",
+              "credential": "teletype1!"
+            }
+          ],
+          "username": "teletype",
+          "password": "teletype1!"
+        }

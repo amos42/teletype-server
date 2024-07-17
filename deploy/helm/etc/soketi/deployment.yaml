@@ -17,9 +17,14 @@ spec:
     spec:
       containers:
         - name: soketi
-          image: quay.io/soketi/soketi:1.6.1-16-alpine
+          image: quay.io/soketi/soketi:1.2.0-16-alpine
           ports:
             - containerPort: 6001
           env:
-            - name: PORT
+            - name: SOKETI_PORT
               value: "6001"
+            - name: SOKETI_DEBUG
+              value: '1'
+          envFrom:     
+            - configMapRef:
+                name: soketi-config

@@ -22,12 +22,9 @@ spec:
     spec:
       containers:
       - name: teletype-server
-        image: teletype/teletype-server:latest
+        image: teletype/teletype-server:emb_db-latest
         ports:
         - containerPort: 4279
-        env:
-        - name: DATABASE_URL
-          value: "postgres://teletype-server:teletype1!@teletype-data:5432/teletype-server"
         envFrom:
           - configMapRef:
               name: teletype-server-config

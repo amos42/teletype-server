@@ -2,53 +2,53 @@ automountServiceAccountToken: true
 deployment:
   deploymentList:
     - name: teletype-server
-      image: teletype/teletype-server
-      tag: latest
+      image: dcpdev-rmlorxco.scr.skr-west.scp-in.com/ide/teletype-server
+      #tag: latest
+      tag: emb_db-latest
       ports:
         - port: 4279
       envConfigList:
         - type: configmap
           name: teletype-server-config
-        - type: secret
-          name: teletype-server-secret
+        # - type: secret
+        #   name: teletype-server-secret
       service:
         type: ClusterIP
-    - name: teletype-data
-      image: postgres
-      tag: 15.6-bullseye
-      ports:
-        - port: 5432
-      envList:
-        POSTGRES_DB: teletype-server
-        POSTGRES_USER: teletype-server
-      envConfigList:
-        - type: secret
-          name: teletype-data-secret
-      volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          tmpMountPath: /postgresql_data
-          name: teletype-data-claim
-      service:
-        type: ClusterIP
+    # - name: teletype-data
+    #   image: dcpdev-rmlorxco.scr.skr-west.scp-in.com/ide/postgres
+    #   tag: 15.6-bullseye
+    #   ports:
+    #     - port: 5432
+    #   envList:
+    #     POSTGRES_DB: teletype
+    #     POSTGRES_USER: teletype
+    #   envConfigList:
+    #     - type: secret
+    #       name: teletype-data-secret
+    #   volumeMounts:
+    #     - mountPath: /var/lib/postgresql/data
+    #       tmpMountPath: /postgresql_data
+    #       name: teletype-data-claim
+    #   service:
+    #     type: ClusterIP
     - name: soketi
-      image: quay.io/soketi/soketi
-      tag: 1.6.1-16-alpine
+      image: dcpdev-rmlorxco.scr.skr-west.scp-in.com/ide/soketi
+      tag: 1.2.0-16-alpine
       ports:
         - port: 6001
           name: ws
       envList:
-        PORT: 6001
-      volumeMounts:
-        - name: soketi-config
-          type: configmap
-          mountPath: /app/config.json
-          subPath: config.json
+        SOKETI_PORT: 6001
+        SOKETI_DEBUG: 1
+      envConfigList:
+        - type: configmap
+          name: soketi-config
       service:
         type: ClusterIP
-        selector:
-          - ws.soketi.app/accepts-new-connections: "yes" # required
+      additionalLabels:
+        ws.soketi.app/accepts-new-connections: "yes" # required
     - name: coturn
-      image: coturn/coturn
+      image: dcpdev-rmlorxco.scr.skr-west.scp-in.com/ide/coturn
       tag: latest
       ports:
         - port: 3478
@@ -61,45 +61,32 @@ deployment:
         - port: 5349
           name: turn-port4
           protocol: UDP
-      args: ["-n", "--min-port=49160", "--max-port=49200", "--log-file=stdout"]
+      volumeMounts:
+        - name: coturn-config
+          type: configmap
+          mountPath: "/startservice.sh"
+          subPath: startservice.sh
+      # args: ["-n", "--min-port=49160", "--max-port=49200", "--log-file=stdout"]
+      args: ["sh", "/startservice.sh"]
       hostNetwork: true
       service:
         type: ClusterIP
-persistence:
-  - name: teletype-data-claim
-    accessMode: ReadWriteOnce
-    existingVolumeClaim: teletype-data-claim
-    volumeSize: 1Gi
+# persistence:
+#   - name: teletype-data-claim
+#     accessMode: ReadWriteOnce
+#     existingVolumeClaim: teletype-data-claim
+#     volumeSize: 1Gi
 configmap:
   - name: soketi-config
     data:
-      config.json: |-
-            {
-                "appManager": {
-                    "driver": "array",
-                    "array": {
-                        "apps": [
-                            {
-                            "id": "1355308",
-                            "key": "cc8fb96b89e84d763d6b",
-                            "secret": "1882b79e0d1e521226d7",
-                            "cluster": "ap3"
-                            }
-                        ]
-                    },
-                    "cache": {
-                        "enabled": false
-                    }
-                },
-                "port": 6001,
-                "debug": true
-            }
+      SOKETI_DEFAULT_APP_ID: '1355308'
+      SOKETI_DEFAULT_APP_KEY: cc8fb96b89e84d763d6b
+      SOKETI_DEFAULT_APP_SECRET: 1882b79e0d1e521226d7
   - name: teletype-server-config
     data:
       PUSHER_HOST: soketi
       ICE_SERVER: |-
           {
-            "username": "teletype",
             "ice_servers": [
               {
                 "url": "stun:coturn:3478?transport=udp",
@@ -124,15 +111,25 @@ configmap:
                 "credential": "teletype1!"
               }
             ],
+            "username": "teletype",
             "password": "teletype1!"
           }
-secret:
-  - name: teletype-server-secret
+  - name: coturn-config
     data:
-      DATABASE_URL: "postgres://teletype-server:teletype1!@teletype-data:5432/teletype-server"
-  - name: teletype-data-secret
-    data:
-      POSTGRES_PASSWORD: 'teletype1!'
+      startservice.sh: |
+          turnadmin -O -r teletype -o teletype
+          turnadmin -a -u teletype -p teletype1! -r teletype
+          turnserver -n --min-port=49160 --max-port=49200 --log-file=stdout
+# secret:
+  # - name: teletype-server-secret
+  #   data:
+  #     DATABASE_URL: "postgres://teletype:teletype1!@teletype-data:5432/teletype"
+  # - name: teletype-data-secret
+  #   data:
+  #     POSTGRES_PASSWORD: 'teletype1!'
+  # - name: soketi-config-secret
+  #   data:
+  #     SOKETI_DEFAULT_APP_SECRET: '1882b79e0d1e521226d7'
 replicaCount: 1
 resources:
   limits:

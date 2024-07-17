@@ -57,7 +57,7 @@ spec:
     {{- end }}
   selector:
     app: {{ .name }}
-    {{- range $key, $value := .selector }}
+    {{- range $key, $value := .additionalLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 {{- end }}

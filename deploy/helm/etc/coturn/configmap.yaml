@@ -1,0 +1,14 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: coturn-config
+  namespace: teletype
+  labels:
+    app: coturn-config
+    app.kubernetes.io/name: coturn-config
+    app.kubernetes.io/part-of: che.eclipse.org
+data:
+    startservice.sh: |-
+        turnadmin -O -r teletype -o teletype
+        turnadmin -a -u teletype -p teletype1! -r teletype
+        turnserver -n --min-port=49160 --max-port=49200 --log-file=stdout

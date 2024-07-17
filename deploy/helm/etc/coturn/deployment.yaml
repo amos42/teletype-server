@@ -22,7 +22,7 @@ spec:
       hostNetwork: true
       containers:
         - name: coturn
-          image: coturn/coturn:latest
+          image: coturn/coturn
           imagePullPolicy: Always
           ports:
             - name: turn-port1
@@ -41,4 +41,13 @@ spec:
               containerPort: 5349
               hostPort: 5349
               protocol: UDP
-          args: ["-n", "--min-port=49160", "--max-port=49200", "--log-file=stdout"]
+          volumeMounts:
+            - name: coturn-config
+              mountPath: /startservice.sh
+              subPath: startservice.sh              
+          args: ["sh", "/startservice.sh"]
+      volumes:
+        - name: coturn-config
+          configMap:
+            name: coturn-config
+            defaultMode: 420
